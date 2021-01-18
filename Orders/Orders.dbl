@@ -24,7 +24,20 @@ main Orders
 		detail,		strDetail
 	endrecord
 
+	record datetime
+		year,		d4
+		month,		d2 
+		day,		d2
+		hour,		d2
+		minute,		d2
+		second,		d2
+	record, X
+		date,		d8
+	endrecord
+
 proc
+
+	datetime = %datetime
 
 	stop
 
