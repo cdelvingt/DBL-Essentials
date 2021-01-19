@@ -42,6 +42,21 @@ proc
 	datetime = %datetime
 	date = datetime 
 
+	call startup	
+
+	call process
+
+	call shutdown
+
 	stop
+
+startup, 
+	return 
+
+process,
+	return
+
+shutdown,
+	return
 
 endmain
