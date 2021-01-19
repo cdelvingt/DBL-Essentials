@@ -31,13 +31,16 @@ main Orders
 		hour,		d2
 		minute,		d2
 		second,		d2
-	record, X
-		date,		d8
+	endrecord
+		
+	record date
+		,		d8
 	endrecord
 
 proc
 
 	datetime = %datetime
+	date = datetime 
 
 	stop
 
