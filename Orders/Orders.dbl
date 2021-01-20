@@ -36,9 +36,7 @@ proc
 	date = datetime 
 
 	call startup	
-
 	call process
-
 	call shutdown
 
 	stop
