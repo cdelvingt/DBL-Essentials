@@ -1,0 +1,31 @@
+;;; <summary>
+;;;	This routine creates a new Synergy Window based on the following parameters	(optional title)
+;;; </summary>
+;;; <param name="a_wind_id"></param>
+;;; <param name="a_wind_name"></param>
+;;; <param name="a_wind_height"></param>
+;;; <param name="a_wind_width"></param>
+;;; <param name="a_wind_row"></param>
+;;; <param name="a_wind_col"></param>
+;;; <param name="#1a_wind_width"></param>
+subroutine create_window
+	required out a_wind_id,		i		; returned ID of the created window
+	required in	 a_wind_name,	a		; name of the window to create
+	required in  a_wind_height,	n		; height of window
+	required in  a_wind_width,	n		; width of window
+	required in  a_wind_row,	n		; screen row for window placement
+	required in  a_wind_col,	n		; screen column for window placement
+	optional in  a_wind_title,	a		; optional title for windox
+	endparams
+
+	.include "WND:windows.def"
+
+proc
+	xcall w_proc(WP_CREATE, a_wind_id, a_wind_name, a_wind_height, a_wind_width)
+	xcall w_proc(WP_PLACE, a_wind_id, a_wind_row, a_wind_col)
+
+	if (^passed(a_wind_title))
+		xcall w_brdr(a_wind_id, WB_ON, WB_TITLE, a_wind_title, WB_TPOS, WBT_TOP, WBT_CENTER)
+
+	xreturn
+endsubroutine

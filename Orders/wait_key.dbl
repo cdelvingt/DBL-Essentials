@@ -1,0 +1,22 @@
+;;; <summary>
+;;;	This routine accepts a single key stroke at a specified position in a specified window 
+;;; and returns the key pressed 
+;;; </summary>
+;;; <param name="a_wind_id"> ID of the window to be used for input </param>
+;;; <param name="a_wind_row"> Row position where input should take place </param>
+;;; <param name="a_wind_col"> Column position where input should take place </param>
+;;; <param name="a_wind_text"> Key pressed (returned to calling routine) </param>
+subroutine wait_key
+	required in  a_wind_id,		i
+	required in  a_wind_row,	n
+	required in  a_wind_col,	n
+	required out a_wind_char,	a	
+	endparams
+
+	.include "WND:windows.def"
+
+proc
+	xcall w_disp(a_wind_id, WD_POS, a_wind_row, a_wind_col, WD_ACCEPT, a_wind_char) 
+
+	xreturn
+endsubroutine

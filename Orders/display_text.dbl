@@ -1,0 +1,21 @@
+;;; <summary>
+;;;	This routine displays a piece of specified text, at a specified position on a specified window
+;;; </summary>
+;;; <param name="a_wind_id"> ID of the window to display text on </param>
+;;; <param name="a_wind_row"> Window row to display text at </param>
+;;; <param name="a_wind_col"> Windox column to display text at </param>
+;;; <param name="a_wind_text"> The text to be displayed </param>
+subroutine display_text
+	required in a_wind_id ,		i
+	required in a_wind_row,		n
+	required in a_wind_col,		n
+	required in a_wind_text,	a
+	endparams
+
+	.include "WND:windows.def"
+
+proc
+	xcall w_disp(a_wind_id, WD_POS, a_wind_row,a_wind_col, a_wind_text)					
+
+	xreturn
+endsubroutine

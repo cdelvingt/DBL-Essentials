@@ -28,6 +28,8 @@ main Orders
 	record 
 		term_chnl,		i4, 1
 		input_chnl,		a1
+		new_menu,		i4
+		input_key,		a1
 	endrecord
 
 proc
@@ -61,8 +63,34 @@ process,
 	;accept(term_chnl, input_chnl)
 
 	;window
-	xcall display_message("Bonjour")
-	xcall display_message("Bonjour, appuyer sur une touche")
+	;xcall display_message("Bonjour")
+	;xcall display_message("Bonjour, appuyer sur une touche")
+
+	xcall create_window(new_menu, "Menu window", 10, 50, 2, 20, "Order Processing Menu") 
+
+	xcall display_text(new_menu, 3, 2, "[A] Add an order")
+	xcall display_text(new_menu, 4, 2, "[V] View latest order")
+	xcall display_text(new_menu, 5, 2, "[E] Exit")
+
+	xcall display_text(new_menu, 7, 2, "Select an option")
+
+	repeat
+	begin
+	xcall wait_key(new_menu, 7, 20, input_key)
+
+	using input_key select
+	("A", "a"),
+		xcall display_message("Your choice : Add")
+	("V","v"),
+		xcall display_message("Your choice : View")
+	("E","e"),
+		exitloop
+	(),
+		xcall display_message("Error : invalid option")
+	endusing
+	end 
+
+	xcall delete_window(new_menu)
 
 	return
 

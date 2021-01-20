@@ -19,12 +19,13 @@ proc
 	width = %trim(a_msg) + 2
 	col = (80 - width) /2
 
-	xcall w_proc(WP_CREATE, window_id, "Window1", 3, width,
-	&			 WP_PLACE, window_id, 9, col)
-	xcall w_brdr(window_id, WB_ON, WB_TITLE, "Message", WB_TPOS, WBT_TOP, WBT_CENTER)
-	xcall w_disp(window_id, WD_POS, 2,2, a_msg,						
-	&						WD_ACCEPT, input_windw) 
-	xcall w_proc(WP_DELETE, window_id)
+	xcall create_window(window_id, "Window 1", 3, width, 5, col, "Message")
+
+	xcall display_text(window_id, 2, 2, a_msg)
+	
+	xcall wait_key(window_id, 3, width, input_windw) 
+
+	xcall delete_window(window_id)
 
 	xreturn
 endsubroutine
