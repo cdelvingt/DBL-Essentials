@@ -1,0 +1,30 @@
+;;; <summary>
+;;; This routine displays text on window. The parameter a_msg is used for that. 
+;;; </summary>
+;;; <param name="a_msg"></param>
+subroutine display_message 
+	required in a_msg	,a	;Text to be displayed
+	endparams
+
+	.include "WND:windows.def"
+
+	record
+		width,			d4 
+		col,			d4
+		window_id,		i4
+		input_windw,	a1
+	endrecord
+
+proc
+	width = %trim(a_msg) + 2
+	col = (80 - width) /2
+
+	xcall w_proc(WP_CREATE, window_id, "Window1", 3, width,
+	&			 WP_PLACE, window_id, 9, col)
+	xcall w_brdr(window_id, WB_ON, WB_TITLE, "Message", WB_TPOS, WBT_TOP, WBT_CENTER)
+	xcall w_disp(window_id, WD_POS, 2,2, a_msg,						
+	&						WD_ACCEPT, input_windw) 
+	xcall w_proc(WP_DELETE, window_id)
+
+	xreturn
+endsubroutine

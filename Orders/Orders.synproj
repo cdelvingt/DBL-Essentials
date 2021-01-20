@@ -48,6 +48,7 @@
     <DebugOptimize>Optimize</DebugOptimize>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="diplay_message.dbl" />
     <Compile Include="Orders.dbl" />
   </ItemGroup>
   <ItemGroup>
