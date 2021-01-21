@@ -29,7 +29,8 @@ main Orders
         term_chnl,		i4, 1
         input_chnl,		a1
         new_menu,		i4
-        input_key,		a1
+		input_key,		a1
+        order_wind,     i4      
     endrecord
 
 proc
@@ -80,7 +81,7 @@ process,
 
         using input_key select
         ("A", "a"),
-            xcall display_message("Your choice : Add")
+            call order_header
         ("V","v"),
             xcall display_message("Your choice : View")
         ("E","e"),
@@ -102,6 +103,35 @@ shutdown,
     display(term_chnl, $SCR_CLR(SCREEN))
     close term_chnl
 	
-    return
+	return
+
+order_header,
+
+	xcall create_window(order_wind, "Order", 10, 50, 5, 20, "Order Header") 
+
+	xcall display_text(order_wind, 3, 2, "Order number          :")
+	xcall display_text(order_wind, 4, 2, "Customer account code :")
+	xcall display_text(order_wind, 5, 2, "Order date            :")
+	xcall display_text(order_wind, 6, 2, "Order placed by       :")
+	xcall display_text(order_wind, 7, 2, "Sales rep code        :")
+
+	repeat
+	begin
+		xcall input(order_wind, 3, 30, header.oh_number)
+
+		if (!header.oh_number)
+            exitloop
+
+		xcall input(order_wind, 4, 30, header.oh_customer, true)
+		xcall input(order_wind, 5, 30, header.oh_date, , , true)
+		xcall input(order_wind, 6, 30, header.oh_contact, true)
+		xcall input(order_wind, 7, 30, header.oh_salesrep, true)
+
+        xcall clear_box(order_wind, 3, 30, 7, 50)
+	end 
+
+	xcall delete_window(order_wind)
+
+    return 
 
 endmain

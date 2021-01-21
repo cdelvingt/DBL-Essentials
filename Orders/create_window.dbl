@@ -7,7 +7,7 @@
 ;;; <param name="a_wind_width"></param>
 ;;; <param name="a_wind_row"></param>
 ;;; <param name="a_wind_col"></param>
-;;; <param name="#1a_wind_width"></param>
+;;; <param name="#a_wind_title"></param>
 subroutine create_window
 	required out a_wind_id,		i		; returned ID of the created window
 	required in	 a_wind_name,	a		; name of the window to create

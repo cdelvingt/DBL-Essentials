@@ -1,0 +1,28 @@
+;;; <summary>
+;;;	Clear a specified field in a specified window
+;;; </summary>
+;;; <param name="a_wnd_id"> ID of the window </param>
+;;; <param name="a_row_from"> Row to clear from </param>
+;;; <param name="a_col_from"> Column to clear from </param>
+;;; <param name="a_row_to"> Row to clear to </param>
+;;; <param name="a_col_to"> Column to clear to </param>
+subroutine clear_box
+	required in a_wndid,	i
+	required in a_row_from,	d
+	required in a_col_from,	d
+	required in a_row_to,	d
+	required in a_col_to,	d
+	endparams
+
+	.include "WND:windows.def"
+
+	record
+		row,				d4
+		blanks,				a30
+	endrecord
+proc
+	for row from a_row_from thru a_row_to
+		xcall w_disp(a_wndid, wd_pos, row, a_col_from, blanks(1:a_col_to-a_col_from))
+	
+	xreturn
+endsubroutine
