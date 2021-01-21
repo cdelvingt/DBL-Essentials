@@ -8,9 +8,9 @@ main Orders
     .include "INC:header.def"
     .include "INC:detail.def"
 
-    record
-        detail,		strDetail
-    endrecord
+    ;record
+     ;   detail,		strDetail
+    ;endrecord
 
     record datetime
         year,		d4
@@ -30,8 +30,15 @@ main Orders
         input_chnl,		a1
         new_menu,		i4
 		input_key,		a1
-        order_wind,     i4      
-    endrecord
+		order_wind,     i4 
+        detail_wind,    i4
+	endrecord
+
+	record
+		mh,             D_HANDLE        ;handle
+		ms,             i4              ;size
+        mc,             i4              ;counter
+	endrecord
 
 proc
 
@@ -52,7 +59,10 @@ startup,
 
     ;window
     xcall w_init(1, term_chnl, 5)
-    xcall w_caption(WC_SET, "My First Synergy Application")
+	xcall w_caption(WC_SET, "My First Synergy Application")
+
+	;dynamic memory
+    mh = %mem_proc(DM_ALLOC, ^size(strDetail)*(ms = 3))
 
     return 
 
@@ -101,8 +111,11 @@ shutdown,
 
     ;terminal screen 
     display(term_chnl, $SCR_CLR(SCREEN))
-    close term_chnl
-	
+	close term_chnl
+
+    ;dynamic memory
+	mh = %mem_proc(DM_FREE, mh)
+
 	return
 
 order_header,
@@ -127,11 +140,52 @@ order_header,
 		xcall input(order_wind, 6, 30, header.oh_contact, true)
 		xcall input(order_wind, 7, 30, header.oh_salesrep, true)
 
+        call order_detail
+
         xcall clear_box(order_wind, 3, 30, 7, 50)
 	end 
 
 	xcall delete_window(order_wind)
 
-    return 
+	return
+    
+order_detail,
+
+    mc = 0
+
+	xcall create_window(detail_wind, "Detail", 10, 50, 5, 20, "Order Detail") 
+
+	xcall display_text(detail_wind, 3, 2, "Order number      :" + %string(header.oh_number, "XXXXXX"))
+	xcall display_text(detail_wind, 4, 2, "Item number       :")
+	xcall display_text(detail_wind, 5, 2, "Part number       :")
+	xcall display_text(detail_wind, 6, 2, "Quantity ordered  :")
+	xcall display_text(detail_wind, 7, 2, "Unit price        :")
+
+	repeat
+	begin
+		mc = mc + 1
+		if (mc > ms)
+            mh = %mem_proc(DM_RESIZ, ^size(strDetail)*(ms = ms + 3), mh)
+
+		^m(strDetail[mc].od_number, mh) = header.oh_number
+		^m(strDetail[mc].od_item, mh) = mc
+
+		xcall display_text(detail_wind, 4, 25,%string(mc))
+
+		xcall input(detail_wind, 5, 25, ^m(strDetail[mc].od_part, mh))
+
+		if (!^m(strDetail[mc].od_part, mh))
+			exitloop
+
+		xcall input(detail_wind, 6, 25, ^m(strDetail[mc].od_qty, mh), true)
+		xcall input(detail_wind, 7, 25, ^m(strDetail[mc].od_unit_price, mh), true)
+
+		xcall clear_box(detail_wind, 5, 25, 7, 50)
+	end 
+
+	xcall delete_window(detail_wind)
+
+
+    return
 
 endmain
