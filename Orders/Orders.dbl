@@ -40,6 +40,12 @@ main Orders
         mc,             i4              ;counter
 	endrecord
 
+	record
+		chnl1,          i4
+		chnl2,          i4
+		ix,				i4
+	endrecord
+
 proc
 
     datetime = %datetime
@@ -62,7 +68,23 @@ startup,
 	xcall w_caption(WC_SET, "My First Synergy Application")
 
 	;dynamic memory
-    mh = %mem_proc(DM_ALLOC, ^size(strDetail)*(ms = 3))
+	mh = %mem_proc(DM_ALLOC, ^size(strDetail)*(ms = 3))
+
+	repeat
+	begin
+		open(chnl1, U:I, "DAT:header.ism") [$ERR_FNF = hnf]
+        exitloop
+	hnf,
+		xcall isamc("DAT:header.ism", ^size(header),1, "start = 1, length = 6, nodups, nomodify") 
+	end
+
+	repeat
+	begin
+		open(chnl2, U:I, "DAT:detail.ism") [$ERR_FNF = dnf]
+		exitloop
+	dnf,
+		xcall isamc("DAT:datail.ism", ^size(strDetail),1, "start = 1:7, length = 6:4, nodups, nomodify") 
+	end
 
     return 
 
@@ -93,7 +115,7 @@ process,
         ("A", "a"),
             call order_header
         ("V","v"),
-            xcall display_message("Your choice : View")
+            call view_order
         ("E","e"),
             exitloop
         (),
@@ -116,6 +138,8 @@ shutdown,
     ;dynamic memory
 	mh = %mem_proc(DM_FREE, mh)
 
+    close chnl1, chnl2 
+
 	return
 
 order_header,
@@ -134,14 +158,32 @@ order_header,
 
 		if (!header.oh_number)
             exitloop
+		;check if an order already exists
+		if (%file_access(FileOp.Find, chnl1,,header.oh_number) == FileResult.OK)
+		begin
+			xcall display_message("Order already exists")
+            nextloop
+		end
 
 		xcall input(order_wind, 4, 30, header.oh_customer, true)
 		xcall input(order_wind, 5, 30, header.oh_date, , , true)
 		xcall input(order_wind, 6, 30, header.oh_contact, true)
 		xcall input(order_wind, 7, 30, header.oh_salesrep, true)
 
-        call order_detail
+		call order_detail
 
+		if(mc)
+		begin
+			if(%file_access(FileOp.Create, chnl1, header) != FileResult.OK) then
+				xcall display_message("Failed : Header record not saved")
+			else
+				for ix from 1 thru mc
+					if(%file_access(FileOp.Create, chnl2, ^m(strDetail[ix],mh)) != FileResult.OK)
+				begin
+				xcall display_message("Failed to an order detail record")
+				exitloop
+				end
+		end
         xcall clear_box(order_wind, 3, 30, 7, 50)
 	end 
 
@@ -175,7 +217,10 @@ order_detail,
 		xcall input(detail_wind, 5, 25, ^m(strDetail[mc].od_part, mh))
 
 		if (!^m(strDetail[mc].od_part, mh))
+		begin
+            mc = mc - 1
 			exitloop
+		end 
 
 		xcall input(detail_wind, 6, 25, ^m(strDetail[mc].od_qty, mh), true)
 		xcall input(detail_wind, 7, 25, ^m(strDetail[mc].od_unit_price, mh), true)
@@ -185,7 +230,86 @@ order_detail,
 
 	xcall delete_window(detail_wind)
 
-
     return
 
+view_order,
+
+	xcall create_window(order_wind, "Order", 10, 50, 5, 20, "View Order Header") 
+
+	xcall display_text(order_wind, 3, 2, "Order number          :")
+	xcall display_text(order_wind, 4, 2, "Customer account code :")
+	xcall display_text(order_wind, 5, 2, "Order date            :")
+	xcall display_text(order_wind, 6, 2, "Order placed by       :")
+	xcall display_text(order_wind, 7, 2, "Sales rep code        :")
+
+	xcall display_text(order_wind, 9, 2, "Press a key			:")
+
+	repeat
+	begin
+		xcall input(order_wind, 3, 30, header.oh_number)
+
+		if (!header.oh_number)
+			exitloop
+		;check if an order already exists
+		if (%file_access(FileOp.Read, chnl1,header,header.oh_number) != FileResult.OK)
+		begin
+			xcall display_message("Order does not exist")
+			nextloop
+		end
+
+		xcall display_text(order_wind, 4, 30, header.oh_customer)
+		xcall display_text(order_wind, 5, 30, %string(header.oh_date, "XXXX/XX/XX"))
+		xcall display_text(order_wind, 6, 30, header.oh_contact)
+		xcall display_text(order_wind, 7, 30, %string(header.oh_salesrep))
+
+		xcall wait_key(order_wind, 9, 30, input_key) 
+
+		call view_order_details
+
+		xcall clear_box(order_wind, 3, 30, 7, 50)
+	end 
+
+	xcall delete_window(order_wind)
+	return
+
+view_order_details,
+
+	mc = 0
+
+	xcall create_window(detail_wind, "Detail", 10, 50, 5, 20, "View Order Detail") 
+
+	xcall display_text(detail_wind, 3, 2, "Order number      :" + %string(header.oh_number, "XXXXXX"))
+	xcall display_text(detail_wind, 4, 2, "Item number       :")
+	xcall display_text(detail_wind, 5, 2, "Part number       :")
+	xcall display_text(detail_wind, 6, 2, "Quantity ordered  :")
+	xcall display_text(detail_wind, 7, 2, "Unit price        :")
+
+	xcall display_text(detail_wind, 9, 2, "Press a key       :")
+	
+	if(%file_access(FileOp.Find, chnl2,,header.oh_number) != FileResult.OK)
+		nop
+
+	repeat
+	begin
+		mc = mc + 1
+
+		if((%file_access(FileOp.ReadNext, chnl2,, ^m(strDetail[mc], mh)) != FileResult.OK)
+		&		|| (^m(strDetail[mc].od_number,mh) != header.oh_number))
+			exitloop
+
+		xcall display_text(detail_wind, 4, 25,%string(mc))
+
+		xcall display_text(detail_wind, 5, 25, ^m(strDetail[mc].od_part, mh))
+
+		xcall display_text(detail_wind, 6, 25, %string(^m(strDetail[mc].od_qty, mh)))
+		xcall display_text(detail_wind, 7, 25, %string(^m(strDetail[mc].od_unit_price, mh)))
+
+		xcall wait_key(detail_wind, 9, 25, input_key) 
+
+		xcall clear_box(detail_wind, 5, 25, 7, 50)
+	end 
+
+	xcall delete_window(detail_wind)
+
+	return
 endmain
