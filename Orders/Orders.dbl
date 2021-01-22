@@ -5,8 +5,10 @@
 main Orders
 
     .include "WND:windows.def"
-    .include "INC:header.def"
-    .include "INC:detail.def"
+    ;.include "INC:header.def"
+	;.include "INC:detail.def"
+	.include "HEADER" repository, record="header"
+	.include "DETAIL" repository, structure ="strDetail"
 
     ;record
      ;   detail,		strDetail
