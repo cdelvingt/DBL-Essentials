@@ -18,5 +18,13 @@ subroutine wait_key
 proc
 	xcall w_disp(a_wind_id, WD_POS, a_wind_row, a_wind_col, WD_ACCEPT, a_wind_char) 
 
+    ;;STEVE: If the user presses a key like enter, that generates 2 characters (CR and LF),
+    ;;accept and discard the second so it can't interfere later.
+    while (%ttsts)
+    begin
+        data tmpchr, a1
+        xcall w_disp(a_wind_id, WD_POS, a_wind_row, a_wind_col, WD_ACCEPT, tmpchr) 
+    end
+
 	xreturn
 endsubroutine

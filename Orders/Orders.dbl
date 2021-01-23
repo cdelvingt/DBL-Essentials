@@ -84,8 +84,9 @@ startup,
 	begin
 		open(chnl2, U:I, "DAT:detail.ism") [$ERR_FNF = dnf]
 		exitloop
-	dnf,
-		xcall isamc("DAT:datail.ism", ^size(strDetail),1, "start = 1:7, length = 6:4, nodups, nomodify") 
+    dnf,
+        ;;STEVE: You had a typo in the file name here.
+		xcall isamc("DAT:detail.ism", ^size(strDetail),1, "start = 1:7, length = 6:4, nodups, nomodify") 
 	end
 
     return 
@@ -155,7 +156,8 @@ order_header,
 	xcall display_text(order_wind, 7, 2, "Sales rep code        :")
 
 	repeat
-	begin
+    begin
+        clear header.oh_number
 		xcall input(order_wind, 3, 30, header.oh_number)
 
 		if (!header.oh_number)
@@ -244,7 +246,7 @@ view_order,
 	xcall display_text(order_wind, 6, 2, "Order placed by       :")
 	xcall display_text(order_wind, 7, 2, "Sales rep code        :")
 
-	xcall display_text(order_wind, 9, 2, "Press a key			:")
+	xcall display_text(order_wind, 9, 2, "Press a key           :")
 
 	repeat
 	begin
@@ -293,9 +295,15 @@ view_order_details,
 
 	repeat
 	begin
-		mc = mc + 1
+        mc = mc + 1
 
-		if((%file_access(FileOp.ReadNext, chnl2,, ^m(strDetail[mc], mh)) != FileResult.OK)
+        ;;STEVE: If you are going to read the items back into the dynamic memory array then you also
+        ;;need to check if you need to resize, just like in the entry code.
+        if (mc > ms)
+            mh = %mem_proc(DM_RESIZ, ^size(strDetail)*(ms = ms + 3), mh)
+
+        ;;STEVE: You had an additional comma in here, after chnl2, which was causing errors for the item reads.
+		if((%file_access(FileOp.ReadNext, chnl2, ^m(strDetail[mc], mh)) != FileResult.OK)
 		&		|| (^m(strDetail[mc].od_number,mh) != header.oh_number))
 			exitloop
 
